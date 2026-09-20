@@ -5,12 +5,14 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const linkage = b.option(std.builtin.LinkMode, "linkage", "Linkage type for the library") orelse .static;
+    const pic = b.option(bool, "pic", "Enable PIC") orelse (if (linkage == .dynamic) true else null);
 
     const xrandr_dep = b.dependency("xrandr", .{});
     const x11_dep = b.dependency("x11", .{
         .target = target,
         .optimize = optimize,
         .linkage = linkage,
+        .pic = pic,
     });
     const x11 = x11_dep.artifact("x11");
     const xorgproto_dep = b.dependency("xorgproto", .{
@@ -22,12 +24,14 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .linkage = linkage,
+        .pic = pic,
     });
     const xrender = xrender_dep.artifact("xrender");
     const xext_dep = b.dependency("xext", .{
         .target = target,
         .optimize = optimize,
         .linkage = linkage,
+        .pic = pic,
     });
     const xext = xext_dep.artifact("xext");
 
@@ -35,7 +39,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
-        .pic = if (linkage == .dynamic) true else null,
+        .pic = pic,
     });
     mod.linkLibrary(x11);
     mod.linkLibrary(xorgproto);
